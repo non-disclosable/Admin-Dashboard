@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Analytics Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .slide {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .slide.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Custom scrollbar for a more polished look */
+        .sidebar-nav::-webkit-scrollbar {
+            width: 6px;
+        }
+        .sidebar-nav::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .sidebar-nav::-webkit-scrollbar-thumb {
+            background: #94a3b8;
+            border-radius: 3px;
+        }
+        .sidebar-nav::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+    </style>
+</head>
+<body class="bg-slate-200 antialiased">
+    <div class="flex h-screen bg-slate-200">
+        <!-- Sidebar -->
+        <aside class="w-72 bg-white flex flex-col flex-shrink-0 border-r border-slate-300">
+            <div class="h-16 flex items-center px-6 border-b border-slate-300">
+                 <svg class="w-8 h-8 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-1.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25A2.25 2.25 0 015.25 3h4.5M15 3.75V7.5a2.25 2.25 0 002.25 2.25h3.75m-9.75-4.5h9.75" />
+                </svg>
+                <span class="ml-3 text-lg font-semibold text-slate-700">Presentation Deck</span>
+            </div>
+            <nav class="flex-1 overflow-y-auto sidebar-nav p-4 space-y-2">
+                <!-- Slide navigation links will be dynamically inserted here -->
+            </nav>
+            <div class="p-4 border-t border-slate-300">
+                <div class="flex justify-between">
+                    <button id="prevBtn" class="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-200 rounded-lg hover:bg-slate-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                        Prev
+                    </button>
+                    <button id="nextBtn" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center">
+                        Next
+                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col">
+            <!-- Top Navbar -->
+            <header class="h-16 bg-white flex items-center justify-between px-6 border-b border-slate-300 flex-shrink-0">
+                <h1 id="slideTitle" class="text-xl font-bold text-slate-800"></h1>
+                <div class="flex items-center space-x-4">
+                    <div class="text-right">
+                        <p class="text-sm font-medium text-slate-700">Admin Analytics Dashboard</p>
+                        <p id="currentDate" class="text-xs text-slate-500"></p>
+                    </div>
+                    <button id="fullscreenBtn" class="p-2 rounded-full hover:bg-slate-200 text-slate-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1v4m0 0h-4m4 0l-5-5M4 16v4m0 0h4m-4 0l5-5m11 1v-4m0 0h-4m4 0l-5 5"></path></svg>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Slide Display Area -->
+            <main id="slideContainer" class="flex-1 p-4 md:p-6 lg:p-8 overflow-y-auto bg-slate-200">
+                <!-- Slides will be injected here -->
+            </main>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const slides = [
+                // Slide 1: Admin Expenses Analysis
+                {
+                    title: "Admin Expenses",
+                    content: `
+                        <div class="w-full max-w-5xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
+                            <header class="bg-slate-800 text-white p-6"><h1 class="text-3xl font-bold">Administrative Expenses Analysis</h1><p class="text-slate-300 text-lg">May - July 2025</p></header>
+                            <main class="p-6 md:p-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                <div class="bg-slate-50 p-6 rounded-lg">
+                                    <h2 class="text-2xl font-semibold text-slate-700 mb-4 border-b-2 border-slate-200 pb-2">Key Insights</h2>
+                                    <ul class="space-y-4 text-slate-600">
+                                        <li class="flex items-start"><svg class="w-6 h-6 text-blue-500 mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"></path></svg><div><strong>Overall Trend:</strong> Total expenses show a slight downward trend, decreasing from ₹24.7M in May to ₹23.0M in July.</div></li>
+                                        <li class="flex items-start"><svg class="w-6 h-6 text-green-500 mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><div><strong>Top Cost Drivers:</strong> 'REGO ETS Services', 'Canteen', and 'Facility Management' are consistently the top three expenses.</div></li>
+                                        <li class="flex items-start"><svg class="w-6 h-6 text-red-500 mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg><div><strong>Significant Increase:</strong> 'Pest Control' services saw a cost increase of over 137% between May and July.</div></li>
+                                        <li class="flex items-start"><svg class="w-6 h-6 text-yellow-500 mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v.01"></path></svg><div><strong>Fluctuating Costs:</strong> 'On Call Cab Booking' expenses varied, dipping in June but rising again in July.</div></li>
+                                    </ul>
+                                </div>
+                                <div class="bg-slate-50 p-6 rounded-lg"><h2 class="text-2xl font-semibold text-slate-700 mb-4 text-center">Top 5 Expenses Comparison (July 2025)</h2><canvas id="expenseChart"></canvas></div>
+                            </main>
+                            <footer class="bg-slate-100 p-6"><h3 class="text-xl font-semibold text-slate-700 mb-2">Discussion Point</h3><p class="text-slate-600">Given that the top 3 services constitute a major portion of the budget, a focused cost-optimization review on these items could yield significant savings. Should we prioritize an analysis of these contracts?</p></footer>
+                        </div>`
+                },
+                // Slide 2: Canteen Recovery
+                {
+                    title: "Canteen Recovery",
+                    content: `
+                        <div class="w-full max-w-5xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
+                            <header class="bg-teal-800 text-white p-6"><h1 class="text-3xl font-bold">Canteen Recovery Analysis</h1><p class="text-teal-200 text-lg">May - July 2025</p></header>
+                            <main class="p-6 md:p-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                <div class="bg-slate-50 p-6 rounded-lg"><h2 class="text-2xl font-semibold text-slate-700 mb-4 text-center">Monthly Recovery by Canteen</h2><canvas id="recoveryChart"></canvas></div>
+                                <div class="bg-slate-50 p-6 rounded-lg">
+                                    <h2 class="text-2xl font-semibold text-slate-700 mb-4 border-b-2 border-slate-200 pb-2">Key Observations</h2>
+                                    <ul class="space-y-4 text-slate-600">
+                                        <li class="flex items-start"><svg class="w-6 h-6 text-blue-500 mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg><div><strong>Peak Recovery in June:</strong> Total recovery peaked at ₹2.65M in June, driven by a surge from the 'Seamless Canteen'.</div></li>
+                                        <li class="flex items-start"><svg class="w-6 h-6 text-green-500 mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><div><strong>Top Contributor:</strong> 'Seamless Canteen' is the largest source of recovery, consistently contributing between 42% and 47% of the total.</div></li>
+                                        <li class="flex items-start"><svg class="w-6 h-6 text-yellow-500 mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v.01"></path></svg><div><strong>Strong Growth:</strong> 'Labour Housing2 RML6' canteen shows a significant and steady increase in recovery, growing by over 53% from May to July.</div></li>
+                                        <li class="flex items-start"><svg class="w-6 h-6 text-red-500 mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"></path></svg><div><strong>Declining Trend:</strong> 'RML1 DIP Canteen' recovery has consistently declined, dropping by almost 37% over the three-month period.</div></li>
+                                    </ul>
+                                </div>
+                            </main>
+                            <footer class="bg-slate-100 p-6"><h3 class="text-xl font-semibold text-slate-700 mb-2">Discussion Point</h3><p class="text-slate-600">The contrasting trends between 'Labour Housing2' (strong growth) and 'RML1 DIP' (steady decline) warrant a closer look. What factors could be driving these opposite trajectories?</p></footer>
+                        </div>`
+                },
+                // Slide 3: Monthly Expense Overview
+                {
+                    title: "Expense Overview",
+                    content: `
+                        <div class="w-full max-w-6xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
+                            <header class="bg-indigo-800 text-white p-6"><h1 class="text-3xl font-bold">Monthly Expense Overview & Control</h1><p class="text-indigo-200 text-lg">February - August 2025</p></header>
+                            <main class="p-6 md:p-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                <div class="bg-slate-50 p-6 rounded-lg"><h2 class="text-2xl font-semibold text-slate-700 mb-4 text-center">Total Monthly Admin Expense</h2><canvas id="monthlyTrendChart"></canvas></div>
+                                <div class="bg-slate-50 p-6 rounded-lg"><h2 class="text-2xl font-semibold text-slate-700 mb-4 text-center">Expense Control: Target vs. Achieve</h2><canvas id="targetAchieveChart"></canvas></div>
+                            </main>
+                            <div class="px-6 md:px-8 pb-6">
+                                <div class="bg-slate-100 p-6 rounded-lg">
+                                    <h2 class="text-2xl font-semibold text-slate-700 mb-4 border-b-2 border-slate-200 pb-2">Summary & Discussion</h2>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-slate-600">
+                                        <div><h3 class="font-semibold text-lg text-slate-800 mb-2">Key Observations</h3><ul class="space-y-3"><li class="flex items-start"><svg class="w-5 h-5 text-red-500 mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg><span>A significant spike in expenses occurred in June, rising from ₹1.80 Cr in May to ₹2.47 Cr.</span></li><li class="flex items-start"><svg class="w-5 h-5 text-blue-500 mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"></path></svg><span>Since the June peak, there has been a consistent, slight downward trend in monthly expenses.</span></li><li class="flex items-start"><svg class="w-5 h-5 text-green-500 mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span>Positive performance against targets, with actual expenses coming in under budget for both June and July.</span></li></ul></div>
+                                        <div><h3 class="font-semibold text-lg text-slate-800 mb-2">Discussion Points</h3><ul class="space-y-3"><li class="flex items-start"><svg class="w-5 h-5 text-slate-500 mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span>What were the primary drivers for the sharp increase in costs from May to June?</span></li><li class="flex items-start"><svg class="w-5 h-5 text-slate-500 mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span>Can the successful cost control measures from June and July be sustained for the August target of ₹2.40 Cr?</span></li></ul></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`
+                },
+                // Slide 4: Planned Activities
+                {
+                    title: "Planned Activities",
+                    content: `
+                        <div class="w-full max-w-6xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
+                            <header class="bg-gray-700 text-white p-6"><h1 class="text-3xl font-bold">Admin Planned Activities & Future Investments</h1><p class="text-gray-300 text-lg">Proposed Initiatives for Q3-Q4 2025</p></header>
+                            <main class="p-6 md:p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div class="bg-slate-50 p-6 rounded-lg"><h2 class="text-2xl font-semibold text-slate-700 mb-4 border-b-2 border-slate-200 pb-2">One-Time Capital Expenditure (CAPEX)</h2><div class="space-y-4"><div class="flex items-center justify-between"><span>HO Renovation</span><span class="font-semibold text-slate-800">₹ 3,000,000</span></div><div class="flex items-center justify-between"><span>Vehicle Requirement in HO (2 units)</span><span class="font-semibold text-slate-800">₹ 3,000,000</span></div><div class="flex items-center justify-between"><span>Kitchen Hood & Chimney (3 canteens)</span><span class="font-semibold text-slate-800">₹ 900,000</span></div><div class="flex items-center justify-between"><span>Roti Maker (3 canteens)</span><span class="font-semibold text-slate-800">₹ 900,000</span></div><div class="flex items-center justify-between"><span>Food Decomposer Machine</span><span class="font-semibold text-slate-800">₹ 600,000</span></div><div class="flex items-center justify-between"><span>Boiler for Rice (3 canteens)</span><span class="font-semibold text-slate-800">₹ 450,000</span></div><div class="flex items-center justify-between"><span>New Washrooms (2 units)</span><span class="font-semibold text-slate-800">₹ 300,000</span></div><div class="flex items-center justify-between"><span>Benmarrys for Counters (6 units)</span><span class="font-semibold text-slate-800">₹ 180,000</span></div></div><div class="mt-6 pt-4 border-t-2 border-slate-200 text-right"><span class="text-lg font-bold text-slate-800">Total CAPEX: ₹ 9,330,000</span></div></div>
+                                <div class="bg-slate-50 p-6 rounded-lg"><h2 class="text-2xl font-semibold text-slate-700 mb-4 border-b-2 border-slate-200 pb-2">New Recurring Monthly Expenses (OPEX)</h2><div class="space-y-4"><div class="flex items-center justify-between"><span>Manpower for Common Areas (70 persons)</span><span class="font-semibold text-slate-800">₹ 47,250 / month</span></div><div class="flex items-center justify-between"><span>Separate Bus for RML 3</span><span class="font-semibold text-slate-800">₹ 120,000 / month</span></div></div><div class="mt-6 pt-4 border-t-2 border-slate-200 text-right"><span class="text-lg font-bold text-slate-800">Total New OPEX: ₹ 167,250 / month</span></div></div>
+                            </main>
+                            <footer class="px-6 md:px-8 pb-6"><div class="bg-slate-100 p-6 rounded-lg"><h3 class="text-xl font-semibold text-slate-700 mb-2">Strategic Consideration</h3><p class="text-slate-600">The proposed investments include significant upgrades to canteen facilities and infrastructure. How should we prioritize these one-time projects, and what is the expected timeline for implementation to manage the capital outflow effectively?</p></div></footer>
+                        </div>`
+                },
+                // Slide 5: Travel Expenses
+                {
+                    title: "Travel Expenses",
+                    content: `
+                        <div class="w-full max-w-6xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
+                            <header class="bg-cyan-800 text-white p-6"><h1 class="text-3xl font-bold">Travel Expenses Analysis</h1><p class="text-cyan-200 text-lg">February - July 2025</p></header>
+                            <main class="p-6 md:p-8 grid grid-cols-1 lg:grid-cols-5 gap-8">
+                                <div class="lg:col-span-2 bg-slate-50 p-6 rounded-lg"><h2 class="text-2xl font-semibold text-slate-700 mb-4 border-b-2 border-slate-200 pb-2">Key Insights</h2><ul class="space-y-4 text-slate-600"><li class="flex items-start"><svg class="w-6 h-6 text-red-500 mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg><div><strong>April Expense Spike:</strong> Total travel expenses peaked sharply in April at ₹9.34M, primarily driven by a surge in flight costs to over ₹7M.</div></li><li class="flex items-start"><svg class="w-6 h-6 text-blue-500 mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12"></path></svg><div><strong>Flight Dominance:</strong> Air travel consistently represents the largest portion of travel expenses, accounting for over 58% of the total spend.</div></li><li class="flex items-start"><svg class="w-6 h-6 text-green-500 mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"></path></svg><div><strong>Lowest Spend in March:</strong> March saw the lowest travel expenditure at ₹4.99M, a significant dip before the April peak.</div></li><li class="flex items-start"><svg class="w-6 h-6 text-yellow-500 mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v.01"></path></svg><div><strong>Hotel Cost Variability:</strong> Hotel expenses show high variability, ranging from ₹649K in May to over ₹1.75M in April.</div></li></ul></div>
+                                <div class="lg:col-span-3 bg-slate-50 p-6 rounded-lg"><h2 class="text-2xl font-semibold text-slate-700 mb-4 text-center">Monthly Travel Expense Breakdown</h2><canvas id="travelChart"></canvas></div>
+                            </main>
+                            <footer class="bg-slate-100 p-6 mx-6 md:mx-8 mb-6 rounded-lg"><h3 class="text-xl font-semibold text-slate-700 mb-2">Discussion Point</h3><p class="text-slate-600">The significant expenditure spike in April, particularly in flights and hotels, suggests a major event or project. What were the business drivers for this increased travel, and can we forecast similar peaks in the future to better manage the travel budget?</p></footer>
+                        </div>`
+                },
+                // Slide 6: Cost Control Initiatives
+                {
+                    title: "Cost Control",
+                    content: `
+                        <div class="w-full max-w-6xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
+                            <header class="bg-slate-700 text-white p-6"><h1 class="text-3xl font-bold">Cost Control & Optimization Initiatives</h1><p class="text-slate-300 text-lg">Actions Taken to Enhance Efficiency and Reduce Spend</p></header>
+                            <main class="p-6 md:p-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                <div class="bg-slate-50 p-6 rounded-lg"><h2 class="text-2xl font-semibold text-slate-700 mb-4 border-b-2 border-slate-200 pb-2 flex items-center"><svg class="w-8 h-8 mr-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>Travel Cost Control</h2><ul class="space-y-4 text-slate-600"><li class="flex items-start"><svg class="w-6 h-6 text-green-500 mr-3 flex-shrink-0 mt-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg><div><strong class="text-slate-700">Standardized Booking Process:</strong> A mandatory travel form has been introduced to streamline and control all travel bookings.</div></li><li class="flex items-start"><svg class="w-6 h-6 text-green-500 mr-3 flex-shrink-0 mt-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg><div><strong class="text-slate-700">Strategic Hotel Onboarding:</strong> Partnered with three hotels for cost-effective and convenient stays.</div></li><li class="flex items-start"><svg class="w-6 h-6 text-green-500 mr-3 flex-shrink-0 mt-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg><div><strong class="text-slate-700">Optimized Visa Processing:</strong> Migrated to the Atlys portal, securing some visas for as low as ₹1.</div></li></ul></div>
+                                <div class="bg-slate-50 p-6 rounded-lg"><h2 class="text-2xl font-semibold text-slate-700 mb-4 border-b-2 border-slate-200 pb-2 flex items-center"><svg class="w-8 h-8 mr-3 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10l2-2h8a1 1 0 001-1z"></path></svg>Transportation Utilization</h2><div class="space-y-4 text-slate-600"><div><strong class="text-slate-700">Route-Based Bus Allocation:</strong><p class="ml-6 mt-1">Shifted from department-wise to route-wise allocation, significantly reducing kilometers traveled.</p></div><div><strong class="text-slate-700">Optimized Vehicle Parking:</strong><p class="ml-6 mt-1">Relocated bus and Bolero parking to minimize unnecessary travel.</p></div><div><strong class="text-slate-700">Future Plans & Challenges:</strong><ul class="list-disc list-inside ml-6 mt-1 space-y-2"><li>Negotiations are underway with new vendors.</li><li>Route-wise deployment will be extended to 24-hour shifts.</li><li class="text-red-600"><strong>Challenge:</strong> Employee numbers in 24-hour shifts exceed bus capacity.</li></ul></div></div></div>
+                            </main>
+                        </div>`
+                },
+                // Slide 7: Corporate Occupancy
+                {
+                    title: "Corporate Occupancy",
+                    content: `
+                        <div class="w-full max-w-6xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
+                            <header class="bg-gray-800 text-white p-6"><h1 class="text-3xl font-bold">Corporate Office Occupancy Analysis</h1><p class="text-gray-300 text-lg">Current Space Utilization Overview</p></header>
+                            <main class="p-6 md:p-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                <div class="bg-slate-50 p-6 rounded-lg flex flex-col"><h2 class="text-2xl font-semibold text-slate-700 mb-4 text-center">Space Inventory & Occupancy</h2><div><h3 class="text-xl font-semibold text-slate-600 mb-4 border-b pb-2">Assignable Spaces</h3><div class="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center"><div class="text-center"><h4 class="text-lg font-semibold text-slate-600 mb-2">Workstations</h4><div class="relative w-40 h-40 md:w-48 md:h-48 mx-auto"><canvas id="workstationChart"></canvas></div><p class="mt-3 text-slate-500"><strong class="text-slate-700">458</strong> Available of <strong>798</strong> Total</p></div><div class="text-center"><h4 class="text-lg font-semibold text-slate-600 mb-2">Cabins</h4><div class="relative w-40 h-40 md:w-48 md:h-48 mx-auto"><canvas id="cabinChart"></canvas></div><p class="mt-3 text-slate-500"><strong class="text-slate-700">31</strong> Available of <strong>74</strong> Total</p></div></div></div><div class="mt-8"><h3 class="text-xl font-semibold text-slate-600 mb-4 border-b pb-2">Common & Support Areas</h3><div class="space-y-4"><div class="flex items-center justify-between bg-white p-3 rounded-lg shadow-sm"><span class="text-slate-700">Conference Rooms</span><span class="font-bold text-slate-800">11 Rooms <span class="text-slate-500 font-medium">(166 Seats)</span></span></div><div class="flex items-center justify-between bg-white p-3 rounded-lg shadow-sm"><span class="text-slate-700">Pantries</span><span class="font-bold text-slate-800">7 Rooms <span class="text-slate-500 font-medium">(97 Seats)</span></span></div><div class="flex items-center justify-between bg-white p-3 rounded-lg shadow-sm"><span class="text-slate-700">Training Rooms</span><span class="font-bold text-slate-800">2 Rooms <span class="text-slate-500 font-medium">(86 Seats)</span></span></div></div></div></div>
+                                <div class="bg-slate-50 p-6 rounded-lg"><h2 class="text-2xl font-semibold text-slate-700 mb-4 text-center">Workstation Occupancy by Floor</h2><canvas id="floorChart"></canvas></div>
+                            </main>
+                            <footer class="px-6 md:px-8 pb-6"><div class="bg-slate-100 p-6 rounded-lg"><h3 class="text-xl font-semibold text-slate-700 mb-2">Strategic Discussion Point</h3><p class="text-slate-600">With a workstation availability of 57%, should we consider consolidating teams to free up entire floors for subleasing, or reserve this space for projected future growth?</p></div></footer>
+                        </div>`
+                },
+                // Slide 8: Guest House Occupancy
+                {
+                    title: "Guest House Occupancy",
+                    content: `
+                        <div class="w-full max-w-6xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
+                            <header class="bg-teal-700 text-white p-6"><h1 class="text-3xl font-bold">Guest House Occupancy Report</h1><p class="text-teal-200 text-lg">Current Status & Historical Trends (Jan - May 2025)</p></header>
+                            <main class="p-6 md:p-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                <div class="bg-slate-50 p-6 rounded-lg"><h2 class="text-2xl font-semibold text-slate-700 mb-4 text-center">Current Occupancy by Block</h2><canvas id="occupancyChart"></canvas><div class="text-center mt-4"><p class="text-xl font-bold text-slate-800">Overall Occupancy: 92%</p><p class="text-slate-500">(55 out of 60 flats occupied)</p></div></div>
+                                <div class="bg-slate-50 p-6 rounded-lg"><h2 class="text-2xl font-semibold text-slate-700 mb-4 text-center">Average Monthly Occupancy Trend</h2><canvas id="trendChart"></canvas><div class="text-center mt-4"><p class="text-slate-500">Occupancy has declined from 94% in January to 50% in May.</p></div></div>
+                            </main>
+                            <footer class="px-6 md:px-8 pb-6"><div class="bg-slate-100 p-6 rounded-lg"><h3 class="text-xl font-semibold text-slate-700 mb-2">Key Observations & Discussion</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-slate-600"><div><ul class="space-y-3"><li class="flex items-start"><svg class="w-5 h-5 text-green-500 mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span><strong>High Current Utilization:</strong> The guest house is currently at 92% occupancy.</span></li><li class="flex items-start"><svg class="w-5 h-5 text-blue-500 mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg><span><strong>Declining Trend:</strong> Average monthly occupancy shows a sharp decline from March to May.</span></li></ul></div><div><p class="font-semibold text-slate-800">What factors contributed to the steep drop in occupancy? Understanding this is crucial for forecasting future demand.</p></div></div></div></footer>
+                        </div>`
+                },
+                // Slide 9: Guest House Recovery & Feedback
+                {
+                    title: "Guest House Feedback",
+                    content: `
+                        <div class="w-full max-w-6xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
+                            <header class="bg-purple-800 text-white p-6"><h1 class="text-3xl font-bold">Guest House: Recovery & Feedback</h1><p class="text-purple-200 text-lg">Financial Performance and Guest Satisfaction (Jan - July 2025)</p></header>
+                            <main class="p-6 md:p-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                <div class="bg-slate-50 p-6 rounded-lg"><h2 class="text-2xl font-semibold text-slate-700 mb-4 text-center">Monthly Recovery from Deductions</h2><canvas id="guestRecoveryChart"></canvas><div class="text-center mt-4"><p class="text-slate-500">Recovery peaked in April, with a total of <strong class="text-slate-700">₹653,000</strong> recovered year-to-date.</p></div></div>
+                                <div class="bg-slate-50 p-6 rounded-lg"><h2 class="text-2xl font-semibold text-slate-700 mb-4 text-center">Guest Satisfaction Feedback</h2><canvas id="feedbackChart"></canvas><div class="text-center mt-4"><p class="text-slate-500">Guest satisfaction has been consistently excellent, at <strong class="text-slate-700">95% or higher</strong> each month.</p></div></div>
+                            </main>
+                            <footer class="px-6 md:px-8 pb-6"><div class="bg-slate-100 p-6 rounded-lg"><h3 class="text-xl font-semibold text-slate-700 mb-2">Key Takeaways & Action Item</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-slate-600"><div><ul class="space-y-3"><li class="flex items-start"><svg class="w-5 h-5 text-green-500 mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.364 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.538-1.118l1.518-4.674a1 1 0 00-.364-1.118L2.98 9.11c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path></svg><span><strong>Excellent Service Quality:</strong> The feedback data confirms a very high standard of service.</span></li><li class="flex items-start"><svg class="w-5 h-5 text-blue-500 mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg><span><strong>Variable Recovery:</strong> Recovery from deductions fluctuates, likely tied to occupancy.</span></li></ul></div><div><p class="font-semibold text-slate-800">The 1% negative feedback in July was due to AC unavailability. We should ensure all 60 flats are equipped with functional AC units.</p></div></div></div></footer>
+                        </div>`
+                },
+                // Slide 10: Housing Complex Occupancy
+                {
+                    title: "Housing Occupancy",
+                    content: `
+                        <div class="w-full max-w-6xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
+                            <header class="bg-cyan-900 text-white p-6"><h1 class="text-3xl font-bold">Housing Complex Occupancy Report</h1><p class="text-cyan-200 text-lg">Current Utilization Across All Facilities</p></header>
+                            <main class="p-6 md:p-8 grid grid-cols-1 lg:grid-cols-5 gap-8">
+                                <div class="lg:col-span-2 bg-slate-50 p-6 rounded-lg"><h2 class="text-2xl font-semibold text-slate-700 mb-4 border-b-2 border-slate-200 pb-2">Key Observations</h2><div class="text-center mb-6"><p class="text-6xl font-bold text-cyan-800">82%</p><p class="text-slate-600 text-lg">Overall Occupancy</p><p class="text-slate-500">(574 out of 707 rooms occupied)</p></div><ul class="space-y-4 text-slate-600"><li class="flex items-start"><svg class="w-6 h-6 text-red-500 mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg><div><strong>Near Full Capacity:</strong> 'Gate-2 Hutment' and 'Oxygen Plant' facilities are operating at near-maximum capacity.</div></li><li class="flex items-start"><svg class="w-6 h-6 text-green-500 mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg><div><strong>Significant Availability:</strong> 'Housing-1' and 'Housing-2' have 130 vacant rooms combined.</div></li><li class="flex items-start"><svg class="w-6 h-6 text-blue-500 mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h.01M12 7h.01M16 7h.01M21 12c0 4.418-4.03 8-9 8s-9-3.582-9-8 4.03-8 9-8 9 3.582 9 8z"></path></svg><div><strong>Total Vacancy:</strong> Across all complexes, there are 133 rooms currently available.</div></li></ul></div>
+                                <div class="lg:col-span-3 bg-slate-50 p-6 rounded-lg"><h2 class="text-2xl font-semibold text-slate-700 mb-4 text-center">Occupancy Breakdown by Location</h2><canvas id="housingOccupancyChart"></canvas></div>
+                            </main>
+                            <footer class="px-6 md:px-8 pb-6"><div class="bg-slate-100 p-6 rounded-lg"><h3 class="text-xl font-semibold text-slate-700 mb-2">Strategic Question</h3><p class="text-slate-600">With 130 rooms available in Housing-1 and Housing-2, what is our strategy for utilizing this capacity? Should these be allocated for upcoming projects, new hires, or could they be repurposed?</p></div></footer>
+                        </div>`
+                },
+            ];
+
+            const slideContainer = document.getElementById('slideContainer');
+            const navContainer = document.querySelector('.sidebar-nav');
+            const slideTitleEl = document.getElementById('slideTitle');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const fullscreenBtn = document.getElementById('fullscreenBtn');
+            const dateEl = document.getElementById('currentDate');
+
+            let currentSlideIndex = 0;
+            let charts = {}; // To hold chart instances
+
+            // --- INITIALIZATION ---
+            function init() {
+                // Populate sidebar and slide container
+                slides.forEach((slide, index) => {
+                    // Create slide div
+                    const slideDiv = document.createElement('div');
+                    slideDiv.className = 'slide';
+                    slideDiv.id = `slide-${index}`;
+                    slideDiv.innerHTML = slide.content;
+                    slideContainer.appendChild(slideDiv);
+
+                    // Create nav link
+                    const navLink = document.createElement('a');
+                    navLink.href = '#';
+                    navLink.className = 'flex items-center px-4 py-2.5 text-slate-600 rounded-lg hover:bg-slate-100 transition-colors duration-200';
+                    navLink.dataset.index = index;
+                    navLink.innerHTML = `<span class="font-medium">${index + 1}. ${slide.title}</span>`;
+                    navContainer.appendChild(navLink);
+                });
+                
+                // Set date in navbar
+                dateEl.textContent = new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+                // Add event listeners
+                navContainer.addEventListener('click', handleNavClick);
+                prevBtn.addEventListener('click', showPrevSlide);
+                nextBtn.addEventListener('click', showNextSlide);
+                fullscreenBtn.addEventListener('click', toggleFullScreen);
+                document.addEventListener('keydown', handleKeyPress);
+
+
+                // Show the first slide
+                showSlide(0);
+            }
+
+            // --- NAVIGATION LOGIC ---
+            function showSlide(index) {
+                // Destroy old charts on the current slide before switching
+                if (charts[currentSlideIndex]) {
+                    charts[currentSlideIndex].forEach(chart => chart.destroy());
+                    delete charts[currentSlideIndex];
+                }
+
+                const allSlides = document.querySelectorAll('.slide');
+                allSlides.forEach(s => s.classList.remove('active'));
+                
+                const newSlide = document.getElementById(`slide-${index}`);
+                if (newSlide) {
+                    newSlide.classList.add('active');
+                    currentSlideIndex = index;
+                    updateUI();
+                    // Initialize charts for the new slide
+                    initChartsForSlide(index);
+                }
+            }
+
+            function showNextSlide() {
+                if (currentSlideIndex < slides.length - 1) {
+                    showSlide(currentSlideIndex + 1);
+                }
+            }
+
+            function showPrevSlide() {
+                if (currentSlideIndex > 0) {
+                    showSlide(currentSlideIndex - 1);
+                }
+            }
+            
+            function handleNavClick(e) {
+                e.preventDefault();
+                const link = e.target.closest('a');
+                if (link && link.dataset.index) {
+                    showSlide(parseInt(link.dataset.index));
+                }
+            }
+
+            function handleKeyPress(e) {
+                if (e.key === 'ArrowRight') showNextSlide();
+                if (e.key === 'ArrowLeft') showPrevSlide();
+            }
+
+            // --- UI UPDATES ---
+            function updateUI() {
+                // Update slide title
+                slideTitleEl.textContent = slides[currentSlideIndex].title;
+
+                // Update nav links active state
+                const allNavLinks = document.querySelectorAll('.sidebar-nav a');
+                allNavLinks.forEach(link => {
+                    if (parseInt(link.dataset.index) === currentSlideIndex) {
+                        link.classList.add('bg-indigo-100', 'text-indigo-700');
+                    } else {
+                        link.classList.remove('bg-indigo-100', 'text-indigo-700');
+                    }
+                });
+
+                // Update prev/next buttons
+                prevBtn.disabled = currentSlideIndex === 0;
+                nextBtn.disabled = currentSlideIndex === slides.length - 1;
+            }
+
+            // --- FULLSCREEN ---
+            function toggleFullScreen() {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen();
+                } else if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+
+            // --- CHART INITIALIZATION ---
+            function initChartsForSlide(index) {
+                charts[index] = []; // Array to hold charts for this slide
+                Chart.register(ChartDataLabels);
+
+                switch (index) {
+                    case 0: // Admin Expenses
+                        const ctx1 = document.getElementById('expenseChart')?.getContext('2d');
+                        if (ctx1) charts[index].push(new Chart(ctx1, { type: 'bar', data: { labels: ['REGO ETS SERVICES', 'CANTEEN', 'SECURITY SERVICES', 'FACILITY MANAGEMENT', 'ROAD SWEEPER'], datasets: [{ label: 'May-25 (₹)', data: [5577014, 5209174, 2177529, 2443478, 2252483], backgroundColor: 'rgba(54, 162, 235, 0.6)' }, { label: 'Jun-25 (₹)', data: [5491920, 5059579, 2558371, 2185919, 2642152], backgroundColor: 'rgba(255, 159, 64, 0.6)' }, { label: 'Jul-25 (₹)', data: [5281871, 4696014, 2232900, 2225153, 1981050], backgroundColor: 'rgba(75, 192, 192, 0.6)' }] }, options: { responsive: true, plugins: { legend: { position: 'top' }, tooltip: { callbacks: { label: (c) => `₹${c.parsed.y.toLocaleString('en-IN')}` } } }, scales: { y: { ticks: { callback: (v) => `₹${(v/1000000)}M` } } } } }));
+                        break;
+                    case 1: // Canteen Recovery
+                        const ctx2 = document.getElementById('recoveryChart')?.getContext('2d');
+                        if (ctx2) charts[index].push(new Chart(ctx2, { type: 'bar', data: { labels: ['May-25', 'Jun-25', 'Jul-25'], datasets: [{ label: 'FITTINGS', data: [382031, 358521, 367560], backgroundColor: '#36a2eb' }, { label: 'HOUSING2', data: [387132, 542286, 592367], backgroundColor: '#4bc0c0' }, { label: 'RML1 DIP', data: [586309, 474220, 368495], backgroundColor: '#ff6384' }, { label: 'SEAMLESS', data: [1022125, 1257483, 1160703], backgroundColor: '#ffcd56' }] }, options: { responsive: true, scales: { x: { stacked: true }, y: { stacked: true, ticks: { callback: (v) => `₹${(v/1000000).toFixed(1)}M` } } } } }));
+                        break;
+                    case 2: // Expense Overview
+                        const ctx3a = document.getElementById('monthlyTrendChart')?.getContext('2d');
+                        if(ctx3a) charts[index].push(new Chart(ctx3a, { type: 'line', data: { labels: ['Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'], datasets: [{ label: 'Amount In Crore (₹)', data: [1.91, 1.68, 1.71, 1.80, 2.47, 2.38, 2.35], fill: true, backgroundColor: 'rgba(79, 70, 229, 0.2)', borderColor: '#4f46e5', tension: 0.3 }] }, options: { responsive: true, scales: { y: { ticks: { callback: (v) => `₹ ${v} Cr` } } } } }));
+                        const ctx3b = document.getElementById('targetAchieveChart')?.getContext('2d');
+                        if(ctx3b) charts[index].push(new Chart(ctx3b, { type: 'bar', data: { labels: ['June', 'July', 'August'], datasets: [{ label: 'Target', data: [2.50, 2.40, 2.40], backgroundColor: '#3b82f6' }, { label: 'Achieved', data: [2.47, 2.38, null], backgroundColor: '#10b981' }] }, options: { responsive: true, scales: { y: { ticks: { callback: (v) => `₹ ${v} Cr` } } } } }));
+                        break;
+                    case 4: // Travel Expenses
+                        const ctx5 = document.getElementById('travelChart')?.getContext('2d');
+                        if(ctx5) charts[index].push(new Chart(ctx5, { type: 'bar', data: { labels: ['Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'], datasets: [{ label: 'Flight', data: [5068684, 2922416, 7002167, 3555555, 3420547, 3486813], backgroundColor: '#36a2eb' }, { label: 'Hotel', data: [992280, 763468, 1750193, 649295, 747435, 1208331], backgroundColor: '#4bc0c0' }, { label: 'Car Rental', data: [970055, 781570, 389012, 775971, 829023, 758832], backgroundColor: '#ffcd56' }] }, options: { responsive: true, scales: { x: { stacked: true }, y: { stacked: true, ticks: { callback: (v) => `₹${(v/1000000).toFixed(1)}M` } } } } }));
+                        break;
+                    case 6: // Corporate Occupancy
+                        const doughnutOptions = (percentage) => ({ responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { display: false }, tooltip: { enabled: false }, datalabels: { formatter: () => `${percentage}%`, color: '#1e293b', font: { size: 32, weight: 'bold' } } } });
+                        const ctx7a = document.getElementById('workstationChart')?.getContext('2d');
+                        if(ctx7a) charts[index].push(new Chart(ctx7a, { type: 'doughnut', data: { datasets: [{ data: [340, 458], backgroundColor: ['#3b82f6', '#e5e7eb'] }] }, options: doughnutOptions('43') }));
+                        const ctx7b = document.getElementById('cabinChart')?.getContext('2d');
+                        if(ctx7b) charts[index].push(new Chart(ctx7b, { type: 'doughnut', data: { datasets: [{ data: [43, 31], backgroundColor: ['#10b981', '#e5e7eb'] }] }, options: doughnutOptions('58') }));
+                        const ctx7c = document.getElementById('floorChart')?.getContext('2d');
+                        if(ctx7c) charts[index].push(new Chart(ctx7c, { type: 'bar', data: { labels: ['G', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th'], datasets: [{ label: 'Occupied', data: [4, 4, 106, 41, 58, 69, 44, 14], backgroundColor: '#6366f1' }, { label: 'Available', data: [2, 80, 62, 119, 98, 51, 28, 18], backgroundColor: '#d1d5db' }] }, options: { indexAxis: 'y', responsive: true, scales: { x: { stacked: true }, y: { stacked: true } }, plugins: { datalabels: { display: false } } } }));
+                        break;
+                    case 7: // Guest House Occupancy
+                        const ctx8a = document.getElementById('occupancyChart')?.getContext('2d');
+                        if(ctx8a) charts[index].push(new Chart(ctx8a, { type: 'bar', data: { labels: ['A-1', 'A-2', 'B', 'D'], datasets: [{ label: 'Filled', data: [12, 13, 12, 18], backgroundColor: '#2dd4bf' }, { label: 'Vacant', data: [0, 0, 0, 5], backgroundColor: '#e2e8f0' }] }, options: { responsive: true, scales: { x: { stacked: true }, y: { stacked: true } } } }));
+                        const ctx8b = document.getElementById('trendChart')?.getContext('2d');
+                        if(ctx8b) charts[index].push(new Chart(ctx8b, { type: 'line', data: { labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'], datasets: [{ label: 'Avg Occupancy %', data: [94, 86, 60, 61, 50], fill: true, backgroundColor: 'rgba(59, 130, 246, 0.2)', borderColor: '#3b82f6', tension: 0.1 }] }, options: { responsive: true, scales: { y: { ticks: { callback: (v) => `${v}%` } } } } }));
+                        break;
+                    case 8: // Guest House Feedback
+                        const ctx9a = document.getElementById('guestRecoveryChart')?.getContext('2d');
+                        if(ctx9a) charts[index].push(new Chart(ctx9a, { type: 'bar', data: { labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'], datasets: [{ label: 'Amount (₹)', data: [35000, 74000, 67000, 140000, 120000, 120000, 97000], backgroundColor: '#8b5cf6' }] }, options: { responsive: true, scales: { y: { ticks: { callback: (v) => `₹${(v/1000)}K` } } } } }));
+                        const ctx9b = document.getElementById('feedbackChart')?.getContext('2d');
+                        if(ctx9b) charts[index].push(new Chart(ctx9b, { type: 'line', data: { labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'], datasets: [{ label: 'Good Feedback %', data: [95, 96, 99, 99, 99, 98, 99], fill: true, backgroundColor: 'rgba(16, 185, 129, 0.2)', borderColor: '#10b981', tension: 0.2 }] }, options: { responsive: true, scales: { y: { min: 90, max: 100, ticks: { callback: (v) => `${v}%` } } } } }));
+                        break;
+                    case 9: // Housing Occupancy
+                        const ctx10 = document.getElementById('housingOccupancyChart')?.getContext('2d');
+                        if(ctx10) charts[index].push(new Chart(ctx10, { type: 'bar', data: { labels: ['Housing-1', 'Housing-2', 'Gate-2 Hutment', 'Oxygen Plant'], datasets: [{ label: 'Occupied', data: [122, 112, 265, 75], backgroundColor: '#06b6d4' }, { label: 'Available', data: [60, 70, 1, 2], backgroundColor: '#cbd5e1' }] }, options: { responsive: true } }));
+                        break;
+                }
+            }
+            
+            // Start the application
+            init();
+        });
+    </script>
+</body>
+</html>
